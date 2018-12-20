@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sc-configuration>
+	<controller>
+		<action name="login" class="ustc.userlevel.action.LoginAction" method="login">
+			<result name="success" type="forward" value="login_success.html"></result>
+			<result name="failure" type="redirect" value="login_failed.html"></result>
+		</action>
+		<action name="logout" class="ustc.userlevel.action.LoginAction" method="logout">
+			<result name="success" type="forward" value="logout.html"></result>
+		</action>
+		<action name="register" class="ustc.userlevel.action.RegisterAction" method="register">
+			<result name="success" type="forward" value="register_success.html"></result>
+			<result name="failure" type="redirect" value="register_failed.html"></result>
+		</action>
+	</controller>
+</sc-configuration>
