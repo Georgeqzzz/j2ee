@@ -1,15 +1,12 @@
-package ustc.userlevel.action;
+package ustc.zgq.action;
 
 public class RegisterAction {
-	
-	//String username,String passwd
-	
+	String username, passwd;
 	public String register() {
-		
+		//do register
 		if(true) {
 			return "success";
 		}
 		else return "failure";
 	}
-
 }

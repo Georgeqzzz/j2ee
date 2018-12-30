@@ -12,10 +12,20 @@
   </welcome-file-list>
   <servlet>
     <servlet-name>sc</servlet-name>
-    <servlet-class>ustc.sse.controller.SimpleController</servlet-class>
+    <servlet-class>ustc.zgq.controller.SimpleController</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>sc</servlet-name>
     <url-pattern>*.sc</url-pattern>
   </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>scp</servlet-name>
+    <servlet-class>ustc.zgq.controller.SimpleControllerProxy</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>scp</servlet-name>
+    <url-pattern>*.scp</url-pattern>
+  </servlet-mapping>
+  
 </web-app>

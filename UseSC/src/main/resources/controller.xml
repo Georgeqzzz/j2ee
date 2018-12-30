@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sc-configuration>
+
+	<!-- 拦截器节点 -->
+	<interceptor name="log" class="ustc.zgq.interceptor.LogInterceptor" 
+	predo="preAction" afterdo="afterAction" >
+	</interceptor>
 	<controller>
-		<action name="login" class="ustc.userlevel.action.LoginAction" method="login">
-			<result name="success" type="forward" value="login_success.html"></result>
+		<action name="login" class="ustc.zgq.action.LoginAction" method="login">
+			<!-- 拦截器引用 -->
+			<interceptor-ref name="log"></interceptor-ref>
+			<result name="success" type="forward" value="success_view.xml"></result>
 			<result name="failure" type="redirect" value="login_failed.html"></result>
 		</action>
-		<action name="logout" class="ustc.userlevel.action.LoginAction" method="logout">
+		<action name="logout" class="ustc.zgq.action.LoginAction" method="logout">
+			<interceptor-ref name="log"></interceptor-ref>
 			<result name="success" type="forward" value="logout.html"></result>
 		</action>
-		<action name="register" class="ustc.userlevel.action.RegisterAction" method="register">
+		<action name="register" class="ustc.zgq.action.RegisterAction" method="register">
+			<interceptor-ref name="log"></interceptor-ref>
 			<result name="success" type="forward" value="register_success.html"></result>
 			<result name="failure" type="redirect" value="register_failed.html"></result>
 		</action>

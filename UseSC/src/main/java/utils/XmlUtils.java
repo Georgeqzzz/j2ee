@@ -4,32 +4,75 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.Node;
+import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
+import org.dom4j.io.XMLWriter;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 public class XmlUtils {
-/*
-<sc-configuration>
-	<controller>
-		<action name="login" class="zgq.ustc.action.LoginAction" method="login">
-			<result name="success" type="forward" value="login_success.html"></result>
-			<result name="failure" type="redirect" value="login_failed.html"></result>
-		</action>
-		<action name="logout" method="logout">
-			<result name="success" type="forward" value="logout.html"></result>
-		</action>
-		<action name="register" class="zgq.ustc.action.RegisterAction" method="register">
-			<result name="success" type="forward" value="register_success.html"></result>
-			<result name="failure" type="redirect" value="register_failed.html"></result>
-		</action>
-	</controller>
-</sc-configuration>
- */
+	
+	public static Properties config_prop;
+    public static SimpleDateFormat date_format;
+    static {
+        config_prop = new Properties();
+        try {
+            config_prop.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("/config.properties"));
+            date_format = new SimpleDateFormat(config_prop.getProperty("date_format"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+	 /**
+     * 将XML文件转换成HTML文件字节数组输出流
+     * @param xsl_path xsl文件路径 (在资源文件目录下)
+     * @param xml_path xml文件路径 (在资源文件目录下)
+     * @return HTML字节数组输出流
+     */
+    public static ByteArrayOutputStream ConvertXml2Html(String xsl_path,String xml_path){
+        TransformerFactory factory = TransformerFactory.newInstance();
+        Transformer transformer = null;
+        StreamSource source_xsl = new StreamSource(Thread.currentThread()
+                .getContextClassLoader().getResourceAsStream(xsl_path));
+        StreamSource source_xml = new StreamSource(Thread.currentThread()
+                .getContextClassLoader().getResourceAsStream(xml_path));
+        try {
+            transformer = factory.newTransformer(source_xsl);
+            StreamResult output = null;
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            output = new StreamResult(baos);
+
+            transformer.transform(source_xml,output);
+            String str = baos.toString();
+            System.out.println(str);
+            return baos;
+        } catch (TransformerConfigurationException e) {
+            e.printStackTrace();
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+	
+	 
     /**
      * 获取action的Attribute属性
      * @param xml_file
@@ -37,7 +80,8 @@ public class XmlUtils {
      * @return
      * @throws MalformedURLException 
      */
-    public static List<String> getActionAttributes(File xml_file, String attr) throws MalformedURLException{
+    public static List<String> getActionAttributes(File xml_file, String attr) 
+    		throws MalformedURLException{
         List<String> actionNames = new ArrayList<>();
         SAXReader reader = new SAXReader();
         try {
@@ -53,7 +97,6 @@ public class XmlUtils {
                 actionNames.add(action.attribute(attr).getText());
             }
 //            System.out.println(actionNames);
-
         } catch (DocumentException e) {
             e.printStackTrace();
         }
@@ -67,7 +110,8 @@ public class XmlUtils {
      * @return
      * @throws MalformedURLException 
      */
-    public static List<String> getAllAttributes(File xml_file,String attrName) throws MalformedURLException{
+    public static List<String> getAllAttributes(File xml_file,String attrName) 
+    		throws MalformedURLException{
         List<String> attributes = new ArrayList<>();
         SAXReader reader = new SAXReader();
         try {
@@ -81,7 +125,6 @@ public class XmlUtils {
                 attributes.add(((Element)action).attribute(attrName).getText());
             }
             System.out.println(attributes);
-
         } catch (DocumentException e) {
             e.printStackTrace();
         }
@@ -97,18 +140,19 @@ public class XmlUtils {
      * @return 
      * @throws MalformedURLException 
      */
-    public static Element getElementByAttr(File xml_file, String element_name,String attr_name, String attr_value) throws MalformedURLException{
+    public static Element getElementByAttr(File xml_file, String element_name,
+    		String attr_name, String attr_value) throws MalformedURLException{
         SAXReader reader = new SAXReader();
         Element element = null;
         try {
             Document document = reader.read(xml_file);
             Element root = document.getRootElement();
             //element_name[@attr_name='attr_value']
-            String sel_str = MessageFormat.format("//{0}[@{1}=''{2}'']", element_name, attr_name, attr_value);
+            String sel_str = MessageFormat.format("//{0}[@{1}=''{2}'']", 
+            		element_name, attr_name, attr_value);
             System.out.println(sel_str);
             //查找满足条件的元素
-            
-            element = (Element) root.selectSingleNode(sel_str);          //????????
+            element = (Element) root.selectSingleNode(sel_str);   
         } catch (DocumentException e) {
             e.printStackTrace();
         }
@@ -127,6 +171,58 @@ public class XmlUtils {
         }else {
             throw new RuntimeException("传入的元素节点为null!");
         }
+    }
+    
+    /**
+     * 获取指定标签名的所有节点
+     * @param is
+     * @param eleName
+     * @return
+     */
+    public static List<Element> getElementsByName(InputStream is, String eleName){
+        SAXReader reader = new SAXReader();
+        Document document = null;
+        try {
+            document = reader.read(is);
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+        Element root = document.getRootElement();
+        return  root.elements(eleName);
+    }
 
+	 /**
+     * 获取一个指定标签名的元素
+     * @param is
+     * @param eleName
+     * @return
+     */
+    public static Element getElementByName(InputStream is, String eleName){
+        SAXReader reader = new SAXReader();
+        Document document = null;
+        try {
+            document = reader.read(is);
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+        Element root = document.getRootElement();
+        return  root.element(eleName);
+    }
+    
+    /**
+     * 记录日志到log_xml文件
+     * @param document
+     * @param file
+     */
+    public static void writeXML(Document document, File file) {
+        OutputFormat outputFormat = OutputFormat.createPrettyPrint();
+        outputFormat.setEncoding("UTF-8");
+        try {
+            XMLWriter writer = new XMLWriter(new FileWriter(file),outputFormat);
+            writer.write(document);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
